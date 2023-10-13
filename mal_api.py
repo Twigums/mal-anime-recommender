@@ -210,7 +210,7 @@ def anime_ids(limit, init_offset, append_status):
 # writes anime details to respective files
 def anime_details(append_status):
 
-    fields = input("Available fields: id, title, main_picture, alternative_titles, start_date, end_date, synopsis, mean, rank, popularity, num_list_users, num_scoring_users, nsfw, genres, created_at, updated_at, media_type, status, my_list_status, num_episodes, start_season, broadcast, source, average_episode_duration, rating, studios, pictures, background, related_anime, related_manga, recommendations, statistics. \n Please type wanted fields separated by commas: ")
+    fields = input("Available fields: id, title, main_picture, alternative_titles, start_date, end_date, synopsis, mean, rank, popularity, num_list_users, num_scoring_users, nsfw, genres, created_at, updated_at, media_type, status, my_list_status, num_episodes, start_season, broadcast, source, average_episode_duration, rating, studios, pictures, background, related_anime, related_manga, recommendations, statistics, videos. \n Please type wanted fields separated by commas: ")
     fields_list = fields.split(", ")
 
     # ask user for type of picture if they want pictures
@@ -243,15 +243,29 @@ def anime_details(append_status):
         anime_details = ranked_details(anime_id, fields, access_token)
 
         for field in fields_list:
-            if field != "main_picture":
-                anime_dict[field].append(anime_details[field])
 
             if field == "main_picture":
                 anime_dict[field].append(anime_details[field][size_type])
 
+            elif field == "videos":
+                if anime_details[field] ==  []:
+                    anime_dict[field].append("None")
+
+                else:
+                    anime_dict[field].append(anime_details[field][0]["url"])
+
+            else:
+                anime_dict[field].append(anime_details[field])
+
+        if i % 100 == 0:
+            print("Finished with anime rank #" + str(i))
+            time.sleep(60) # arbitrary number to bypass api call frequency
 
     for i, field in enumerate(fields_list):
         writer(path_list[i], anime_dict[field], append_status)
+
+# requires token and returns nothing
+# writes anime video links to a video file
 
 if __name__ == "__main__":
     args = sys.argv
