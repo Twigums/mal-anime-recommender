@@ -6,7 +6,7 @@ import cv2
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import subprocess
 import pytesseract
-from PIL import Image
+import numpy as np
 
 # helper function: returns the path to the video after downloading to specified path
 def download_video(url, name, path_output):
@@ -90,7 +90,6 @@ def contains_japanese(text):
 
     return False
 
-
 # image = Image.open("image.png")
 # 
 # text_data = pytesseract.image_to_string(image, lang = "jpn")
@@ -102,6 +101,38 @@ def contains_japanese(text):
 # path_output = "./videos/"
 
 # returns nothing and saves videos to specified videos folder
+
+def remove_bad_frames():
+    threshold = 25 # in percent
+
+    # flaming background range in hsv colors
+    low_range_color = np.array([0, 50, 50])
+    top_range_color = np.array([0, 255, 255])
+
+    path_to_frames = "/mnt/b/YouTubeDL/3035-videos/frames/"
+    list_frames = os.listdir(path_to_frames)
+
+    for frame in list_frames:
+        current_frame = path_to_frames + frame
+        print(current_frame)
+
+        image = cv2.imread(current_frame)
+        grey_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        mask = cv2.inRange(hsv_image, low_range_color, top_range_color)
+        masked_image = cv2.bitwise_and(image, image, mask = mask)
+
+        text_data_masked = pytesseract.image_to_string(masked_image, lang = "jpn")
+        text_data_grey = pytesseract.image_to_string(grey_image, lang = "jpn")
+        std = np.std(grey_image)
+
+        if contains_japanese(text_data_grey) or contains_japanese(text_data_masked) or std <= threshold:
+            print("removed")
+
+            os.remove(current_frame)
+
+
 def get_videos():
     if not os.path.exists("videos"):
         os.makedirs("videos")
