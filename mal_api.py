@@ -264,9 +264,6 @@ def anime_details(append_status):
     for i, field in enumerate(fields_list):
         writer(path_list[i], anime_dict[field], append_status)
 
-# requires token and returns nothing
-# writes anime video links to a video file
-
 if __name__ == "__main__":
     args = sys.argv
     globals()[args[1]](*args[2:])

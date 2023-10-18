@@ -5,11 +5,13 @@ import requests
 if not os.path.exists("images"):
     os.makedirs("images")
 
+# path to picture urls
 path_picture_urls = "./anime-info/top-tv/anime_picture_urls.txt"
 
 with open(path_picture_urls, "r") as file:
     image_urls = file.read().splitlines()
 
+# for each url, we should try to download the image
 for i, url in enumerate(image_urls, 1):
     response = requests.get(url)
 

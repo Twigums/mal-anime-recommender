@@ -90,18 +90,7 @@ def contains_japanese(text):
 
     return False
 
-# image = Image.open("image.png")
-# 
-# text_data = pytesseract.image_to_string(image, lang = "jpn")
-# 
-# if contains_japanese(text_data):
-#     print("hellosu")
-# url = "https://www.youtube.com/watch?v=ofSxVONGKTU"
-# name = "test"
-# path_output = "./videos/"
-
 # returns nothing and saves videos to specified videos folder
-
 def remove_bad_frames():
     threshold = 25 # in percent
 
@@ -132,7 +121,8 @@ def remove_bad_frames():
 
             os.remove(current_frame)
 
-
+# function to try to download video using the url if it is available (some videos are geo-locked, privated, etc.)_
+# returns nothing and saves video in defined videos folder
 def get_videos():
     if not os.path.exists("videos"):
         os.makedirs("videos")
@@ -149,6 +139,8 @@ def get_videos():
                 except:
                     print("Could not get video for anime #", i)
 
+# trims all videos in listed directory to given percentages
+# returns nothing, and saves the trimmed video in given location
 def trim_all(start_percentage, end_percentage):
     path_to_videos = "/mnt/b/YouTubeDL/videos/"
     list_videos = os.listdir(path_to_videos)
@@ -156,6 +148,8 @@ def trim_all(start_percentage, end_percentage):
     for video in list_videos:
         trim_video(path_to_videos + video, path_to_videos + "trimmed" + video, start_percentage, end_percentage)
 
+# generate random frames using the video listed in the directory
+# returns nothing and saves frames into the output path
 def random_frames_all(frames):
     path_to_videos = "/mnt/b/YouTubeDL/3035-videos/trimmed/"
     path_to_output = "/mnt/b/YouTubeDL/3035-videos/frames/"
