@@ -1,7 +1,7 @@
 # mal-anime-recommender
 
 ## Steps to get this to work locally:
-1. `python3 -r requirements.txt`
+1. `pip3 install -r requirements.txt`
 2. Get an api (I will not share my api token... :( )
    - run `python3 mal_api.py get_api`
    - follow instructions
