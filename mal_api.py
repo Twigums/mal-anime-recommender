@@ -9,7 +9,7 @@ def get_text(path):
     with open(path, "r") as file:
         raw_text = file.read().strip()
 
-    return raw_text 
+    return raw_text
 
 # helper function: returns token
 def get_new_code_verifier() -> str:
@@ -35,7 +35,6 @@ def ranked_ids(limit, offset, access_token):
 
     if response.status_code == 200:
         anime_data = response.json()
-
         anime_ids = [entry["node"]["id"] for entry in anime_data["data"][:]]
 
         return anime_ids
@@ -63,6 +62,33 @@ def ranked_details(anime_id, fields, access_token):
         anime_details = response.json()
 
         return anime_details
+
+    else:
+        print(f"Failed to retrieve information. Status code: {response.status_code}")
+
+# helper function: requires username and access token and returns user list info
+def get_user_info(username, access_token):
+    url = f"https://api.myanimelist.net/v2/users/{username}/animelist"
+
+    params = {
+            "fields": "list_status",
+            "status": "completed",
+            "sort": "list_score",
+            "limit": "1000",
+    }
+
+    headers = {
+            "Authorization": f"Bearer {access_token}",
+    }
+
+    response = requests.get(url, params = params, headers = headers)
+
+    if response.status_code == 200:
+        list_info = response.json()
+        anime_ids = [entry["node"]["id"] for entry in list_info["data"][:]]
+        anime_score = [entry["list_status"]["score"] for entry in list_info["data"][:]]
+
+        return anime_ids, anime_score
 
     else:
         print(f"Failed to retrieve information. Status code: {response.status_code}")
@@ -209,7 +235,6 @@ def anime_ids(limit, init_offset, append_status):
 # requires token and returns nothing
 # writes anime details to respective files
 def anime_details(append_status):
-
     fields = input("Available fields: id, title, main_picture, alternative_titles, start_date, end_date, synopsis, mean, rank, popularity, num_list_users, num_scoring_users, nsfw, genres, created_at, updated_at, media_type, status, my_list_status, num_episodes, start_season, broadcast, source, average_episode_duration, rating, studios, pictures, background, related_anime, related_manga, recommendations, statistics, videos. \n Please type wanted fields separated by commas: ")
     fields_list = fields.split(", ")
 
@@ -263,6 +288,26 @@ def anime_details(append_status):
 
     for i, field in enumerate(fields_list):
         writer(path_list[i], anime_dict[field], append_status)
+
+# requires token and returns nothing
+# writes user list info to respective files
+def user_info(username, append_status):
+
+    # correct types for the function
+    append_status = bool(append_status)
+
+    # app info
+    path_access_token = "access_token.txt"
+    access_token = get_text(path_access_token)
+
+    print("Using token...\n")
+
+    list_anime_ids, list_scores = get_user_info(username, access_token)
+    path_anime_ids = f"./anime-info/{username}_anime_ids.txt"
+    path_anime_scores = f"./anime-info/{username}_anime_scores.txt"
+
+    writer(path_anime_ids, list_anime_ids, append_status)
+    writer(path_anime_scores, list_scores, append_status)
 
 if __name__ == "__main__":
     args = sys.argv
