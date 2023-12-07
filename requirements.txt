@@ -3,7 +3,10 @@ youtube-dl
 imageio
 imageio-ffmpeg
 moviepy
-pillow
 pytesseract
 requests
 urllib3
+numpy
+torch
+torchvision
+tokenizer

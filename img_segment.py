@@ -3,7 +3,7 @@ import torchvision.transforms as transforms
 import cv2
 import numpy as np
 import colorsys
-from transformers import AutoFeatureExtractor, CLIPSegModel # this currently does not work, will fix soon
+# from transformers import AutoFeatureExtractor, CLIPSegModel # this currently does not work, will fix soon
 
 # generates colormap
 def generate_colormap(num_classes):
@@ -17,13 +17,16 @@ def generate_colormap(num_classes):
     return colormap
 
 # load model from huggingface
-model_name = "CIDAS/clipseg-rd64-refined"
-model = CLIPSegModel.from_pretrained(model_name)
-tokenizer = AutoFeatureExtractor.from_pretrained(model_name)
+# model_name = "CIDAS/clipseg-rd64-refined"
+# model = CLIPSegModel.from_pretrained(model_name)
+# tokenizer = AutoFeatureExtractor.from_pretrained(model_name)
+
+model = torch.load("isnetis.ckpt") # the anime-segmentation model by skytnt
+model.eval()
 
 # loads image using cv2
 input_image = cv2.imread('images/trimmed1_0.jpg')
-inputs = tokenizer(input_ids = input_image, return_tensors = "pt")
+input_tensor = torch.from_numpy(input_image)
 
 # preprocess = transforms.Compose([
   #  transforms.ToTensor(),
@@ -33,7 +36,7 @@ inputs = tokenizer(input_ids = input_image, return_tensors = "pt")
 # input_batch = input_tensor.unsqueeze(0)
 
 with torch.no_grad():
-    output = model(**inputs)
+    output = model(input_tensor)
 
 masks = outputs.logits
 

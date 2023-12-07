@@ -1,16 +1,14 @@
 import os
 import re
 import numpy as np
-import torch
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
+import cv2
 from PIL import Image
 
 def get_labels(path_to_labels, to_round):
     with open(path_to_labels, "r") as file:
         labels = file.read().splitlines()
 
-    if to_round == True:
+    if to_round:
         labels_int = [round(eval(label)) for label in labels]
 
     else:
@@ -18,35 +16,57 @@ def get_labels(path_to_labels, to_round):
 
     return labels_int
 
-def create_dataset(path_to_folder, path_to_labels, transform = None):
-    labels = get_labels(path_to_labels, to_round = True)
-
-    images = []
+def move_to_classes(path_to_make, path_to_folder):
+    labels_int = get_labels(path_to_labels, to_round = False)
     list_frames = os.listdir(path_to_folder)
 
-    for frame in list_frames:
+    for i, frame in enumerate(list_frames):
         current_frame = path_to_folder + frame
-        rank_idx, frame_idx = [int(occur_str) for occur_str in re.findall(r"\d+", frame)]
+        rank_idx, frame_idx, *others = [int(occur_str) for occur_str in re.findall(r"\d+", frame)]
 
-        frame_label = labels[rank_idx - 1] # 1 indexed
+        frame_label = labels_int[rank_idx - 1] # 1 indexed
+        destination = path_to_make + str(frame_label)
 
-        image = Image.open(current_frame)
+        if not os.path.exists(destination):
+            os.makedirs(destination)
 
-        if transform:
-            image = transform(image)
+        os.system(f"cp {current_frame} {destination}")
 
-        images.append((image, frame_label))
+def add_noise(path_to_images, path_to_noised_images):
+    mean = 0
+    std = 3
 
-    return images
+    list_images = os.listdir(path_to_images)
 
-transform = transforms.Compose([
-    transforms.Grayscale(),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5, ), (0.5, )),
-    ])
+    if not os.path.exists(path_to_noised_images):
+        os.makedirs(path_to_noised_images)
+
+    for i, image in enumerate(list_images):
+        current_image = cv2.imread(path_to_images + image)
+        row, col, ch = current_image.shape
+        gaussian = np.random.normal(mean, std, (row, col, ch))
+        noisy_image = current_image - gaussian.astype(np.uint8)
+        noisy_image = np.clip(noisy_image, 0, 255)
+
+        image_name = image[0:-4]
+        destination = path_to_noised_images + image_name + "_" + str(mean) + "_" + str(std) + ".jpg"
+        cv2.imwrite(destination, cv2.cvtColor(noisy_image, cv2.COLOR_RGB2BGR))
+
+"""
+if __name__ == "__main__":
+    args = sys.argv
+    globals()[args[1]](*args[2:])
+"""
 
 path_to_labels = "./anime-info/top-tv/anime_scores.txt"
-path_to_folder = "/mnt/b/YouTubeDL/anime-segmentation/output/test_img/"
+path_to_folder = "/mnt/b/YouTubeDL/anime-segmentation/test_img/"
+path_to_noise_folder = "/mnt/b/YouTubeDL/anime-segmentation/test_noised_img/"
+path_to_images = "/mnt/b/YouTubeDL/anime-segmentation/test_img/"
+path_to_noised_images = "/mnt/b/YouTubeDL/anime-segmentation/test_noised_img/"
+path_to_make = "/mnt/b/YouTubeDL/anime-segmentation/output/data_rgb_noRound/"
+path_to_make_backup = "/mnt/b/YouTubeDL/anime-segmentation/output/data_rgb_noRound_test/"
+path_to_data = "/mnt/b/YouTubeDL/anime-segmentation/output/data_round/"
 
-images = create_dataset(path_to_folder, path_to_labels, transform = transform)
-print(images.shape)
+move_to_classes(path_to_make, path_to_folder)
+move_to_classes(path_to_make_backup, path_to_folder)
+move_to_classes(path_to_make, path_to_noise_folder)
