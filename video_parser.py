@@ -168,8 +168,8 @@ def trim_all(start_percentage, end_percentage):
 # generate random frames using the video listed in the directory
 # returns nothing and saves frames into the output path
 def random_frames_all(frames):
-    path_to_videos = "/mnt/b/YouTubeDL/3035-videos/trimmed/"
-    path_to_output = "/mnt/b/YouTubeDL/3035-videos/frames/"
+    path_to_videos = "/mnt/b/YouTubeDL/new-videos/"
+    path_to_output = "/mnt/b/YouTubeDL/new-videos/frames/"
     list_videos = os.listdir(path_to_videos)
 
     if not os.path.exists(path_to_output):

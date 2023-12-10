@@ -1,9 +1,10 @@
 from tqdm import tqdm
 import torch
 import torch.nn as nn
-from torchvision import datasets, transforms
-from torch.utils.data import DataLoader, random_split
+import numpy as np
 from torch.multiprocessing import freeze_support
+
+from load_data import load_data
 
 torch.manual_seed(2023)
 
@@ -12,48 +13,15 @@ batch_size = 128
 num_workers = 8
 max_epochs = 15
 learning_rate = 0.0005
-weight_decay = 1e-6
 
-path_to_data = "B:/YouTubeDL/anime-segmentation/output/data_rgb_noRound/"
-path_to_test = "B:/YouTubeDL/anime-segmentation/output/data_rgb_noRound_test"
-path_to_model = "./CNN_model_MSE.pt"
+path_to_data = "B:/YouTubeDL/anime-segmentation/output/data_rgb_round/"
+path_to_test = "B:/YouTubeDL/anime-segmentation/output/data_rgb_round_test/"
+path_to_model = "./CNN_model.pt"
 
-needs_save = True
-noRound = True
+needs_save = False
+noRound = False
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-def load_data(path_to_data, split_percent, batch_size, num_workers):
-    transform = transforms.Compose([
-        transforms.Resize((320, 180)),
-        # transforms.Grayscale(),
-        transforms.ToTensor(),
-        transforms.Normalize((0.15, ), (0.3, )),
-        ])
-
-    dataset = datasets.ImageFolder(root = path_to_data, transform = transform)
-
-    train_size = int(split_percent * len(dataset))
-    test_size = int(len(dataset) - train_size)
-
-    train_data, test_data = random_split(dataset, [train_size, test_size])
-
-    train_loader = DataLoader(
-            dataset = train_data,
-            batch_size = batch_size,
-            shuffle = True,
-            num_workers = num_workers,
-            pin_memory = True,
-            )
-    test_loader = DataLoader(
-            dataset = test_data,
-            batch_size = batch_size,
-            shuffle = False,
-            num_workers = num_workers,
-            pin_memory = True,
-            )
-
-    return train_data, test_data, train_loader, test_loader
 
 class CNN(nn.Module):
     def __init__(self, learning_rate, max_epochs):
@@ -141,8 +109,8 @@ class CNN(nn.Module):
         self.max_epochs = max_epochs
 
     def fit(self, train_loader, criterion, optimizer):
-
         steps = 1
+
         for i in range(1, self.max_epochs):
             with tqdm(train_loader, unit = "batch") as tepoch:
 
@@ -155,7 +123,7 @@ class CNN(nn.Module):
                     images, labels = images.to(device), labels.to(device)
 
                     if noRound:
-                        labels = labels.unsqueeze(1)
+                        labels = labels.unsqueeze(1).to(torch.float32)
 
                     output = self.forward(images)
 
@@ -164,19 +132,23 @@ class CNN(nn.Module):
 
                     if (j + 1) % steps == 0:
                         optimizer.step()
-
                         optimizer.zero_grad()
+
                     # optimizer.step()
                     # optimizer.zero_grad()
 
                     items = len(train_loader)
                     epoch_loss += loss.item() / items
                     _, pred = torch.max(output.data, 1)
+                    if noRound:
+                        pred = np.round(pred.cpu())
+                        labels = labels.cpu()
+
                     total_data += labels.size(0)
                     correct_data += (pred == labels).sum().item()
                 acc_rate = correct_data / total_data
-                tepoch.set_postfix({"Loss": epoch_loss, "Accuracy": acc_rate})
-            print(acc_rate)
+            print("Loss: ", epoch_loss)
+            print("Accuracy: ", acc_rate)
 
     def predict(self, test_loader, criterion):
         with torch.no_grad():
@@ -187,7 +159,7 @@ class CNN(nn.Module):
                 images, labels = images.to(device), labels.to(device)
 
                 if noRound:
-                    labels = labels.unsqueeze(1)
+                    labels = labels.unsqueeze(1).to(torch.float32)
 
                 output = self.forward(images)
                 loss = criterion(output, labels)
@@ -196,14 +168,18 @@ class CNN(nn.Module):
                 pred_loss += loss.item() / items
 
                 _, pred = torch.max(output.data, 1)
+
+                if noRound:
+                    pred = np.round(pred.cpu())
+                    labels = labels.cpu()
+
                 total_data += labels.size(0)
                 correct_data += (pred == labels).sum().item()
 
-            print(correct_data / total_data)
+            print("Testing accuracy: ", correct_data / total_data)
 
     def forward(self, X):
         return self.layers(X)
-
 
 if __name__ == "__main__":
     freeze_support()
@@ -229,3 +205,4 @@ if __name__ == "__main__":
         model.eval()
 
     model.predict(test_loader, criterion)
+

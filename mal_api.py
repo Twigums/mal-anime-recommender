@@ -45,6 +45,7 @@ def ranked_ids(limit, offset, access_token):
         return []
 
 # helper function: requires anime_ids, fields, and access_token and returns anime details
+
 def ranked_details(anime_id, fields, access_token):
     url = f"https://api.myanimelist.net/v2/anime/{anime_id}"
 

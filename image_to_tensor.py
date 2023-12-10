@@ -16,6 +16,37 @@ def get_labels(path_to_labels, to_round):
 
     return labels_int
 
+def user_move_to_classes(path_to_user_labels, path_to_user_animes, path_to_make, path_to_folder):
+    labels_int = get_labels(path_to_user_labels, to_round = False)
+    list_frames = os.listdir(path_to_folder)
+
+    path_to_anime_ids = "./anime-info/anime_ids.txt"
+    with open(path_to_anime_ids, "r") as file:
+        anime_ids = file.read().splitlines()
+
+    with open(path_to_user_animes, "r") as file:
+        user_animes = file.read().splitlines()
+
+    for i, frame in enumerate(list_frames):
+        current_frame = path_to_folder + frame
+        rank_idx, frame_idx, *others = [int(occur_str) for occur_str in re.findall(r"\d+", frame)]
+        frame_anime_id = anime_ids[rank_idx - 1] # 1 indexed
+
+        try:
+            user_anime_index = user_animes.index(frame_anime_id)
+
+        except:
+            pass
+
+        else:
+            frame_label = labels_int[user_anime_index]
+            destination = path_to_make + str(frame_label)
+
+            if not os.path.exists(destination):
+                os.makedirs(destination)
+
+            os.system(f"cp {current_frame} {destination}")
+
 def move_to_classes(path_to_make, path_to_folder):
     labels_int = get_labels(path_to_labels, to_round = False)
     list_frames = os.listdir(path_to_folder)
@@ -58,6 +89,7 @@ if __name__ == "__main__":
     globals()[args[1]](*args[2:])
 """
 
+username = "twiggly"
 path_to_labels = "./anime-info/top-tv/anime_scores.txt"
 path_to_folder = "/mnt/b/YouTubeDL/anime-segmentation/test_img/"
 path_to_noise_folder = "/mnt/b/YouTubeDL/anime-segmentation/test_noised_img/"
@@ -65,8 +97,14 @@ path_to_images = "/mnt/b/YouTubeDL/anime-segmentation/test_img/"
 path_to_noised_images = "/mnt/b/YouTubeDL/anime-segmentation/test_noised_img/"
 path_to_make = "/mnt/b/YouTubeDL/anime-segmentation/output/data_rgb_noRound/"
 path_to_make_backup = "/mnt/b/YouTubeDL/anime-segmentation/output/data_rgb_noRound_test/"
+path_to_make_user = f"/mnt/b/YouTubeDL/anime-segmentation/output/data_{username}/"
 path_to_data = "/mnt/b/YouTubeDL/anime-segmentation/output/data_round/"
+path_to_user_labels = f"./anime-info/{username}_anime_scores.txt"
+path_to_user_animes = f"./anime-info/{username}_anime_ids.txt"
 
-move_to_classes(path_to_make, path_to_folder)
-move_to_classes(path_to_make_backup, path_to_folder)
-move_to_classes(path_to_make, path_to_noise_folder)
+user_move_to_classes(path_to_user_labels, path_to_user_animes, path_to_make_user, path_to_folder)
+user_move_to_classes(path_to_user_labels, path_to_user_animes, path_to_make_user, path_to_noise_folder)
+
+# move_to_classes(path_to_make, path_to_folder)
+# move_to_classes(path_to_make_backup, path_to_folder)
+# move_to_classes(path_to_make, path_to_noise_folder)
