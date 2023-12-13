@@ -14,11 +14,12 @@ num_workers = 8
 max_epochs = 15
 learning_rate = 0.0005
 
-path_to_data = "B:/YouTubeDL/anime-segmentation/output/data_rgb_round/"
-path_to_test = "B:/YouTubeDL/anime-segmentation/output/data_rgb_round_test/"
-path_to_model = "./CNN_model.pt"
+# SPECIFY FILEPATHS BELOW
+path_to_data = ""
+path_to_test = ""
+path_to_model = ""
 
-needs_save = False
+needs_save = True
 noRound = False
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

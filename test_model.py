@@ -13,16 +13,17 @@ batch_size = 128
 num_workers = 8
 max_epochs = 15
 learning_rate = 0.0005
-weight_decay = 1e-5
 
-username = "twiggly"
-path_to_model = "./CNN_model.pt"
-path_to_user_data = f"B:/YouTubeDL/anime-segmentation/output/data_{username}/"
-path_to_recommend_data = "./test-set/"
+# SPECIFY FILEPATHS BELOW
+username = ""
+path_to_model = ""
+path_to_save_model = ""
+path_to_user_data = ""
+path_to_recommend_data = ""
 
 num_classes = 9 # 1 if MSE
-needs_save = False
-noRound = True
+needs_save = True
+noRound = False # True if MSE
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -218,14 +219,14 @@ if __name__ == "__main__":
         optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
 
         model.fit(train_loader, criterion, optimizer)
-        torch.save(model, "./twiggly.pt")
+        torch.save(model, path_to_save_model)
 
         model.predict(test_loader)
 
     else:
         idxs, recommend_test_loader = load_recommend_data(path_to_recommend_data, 1, num_workers)
 
-        model = torch.load("./twiggly.pt")
+        model = torch.load(path_to_save_model)
         model.eval()
 
         model.recommend(idxs, recommend_test_loader)

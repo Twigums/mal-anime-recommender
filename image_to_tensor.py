@@ -16,7 +16,7 @@ def get_labels(path_to_labels, to_round):
 
     return labels_int
 
-def user_move_to_classes(path_to_user_labels, path_to_user_animes, path_to_make, path_to_folder):
+def user_move_to_classes(path_to_make, path_to_folder, path_to_user_labels, path_to_user_animes):
     labels_int = get_labels(path_to_user_labels, to_round = False)
     list_frames = os.listdir(path_to_folder)
 
@@ -63,10 +63,7 @@ def move_to_classes(path_to_make, path_to_folder):
 
         os.system(f"cp {current_frame} {destination}")
 
-def add_noise(path_to_images, path_to_noised_images):
-    mean = 0
-    std = 3
-
+def add_noise(path_to_images, path_to_noised_images, std):
     list_images = os.listdir(path_to_images)
 
     if not os.path.exists(path_to_noised_images):
@@ -83,28 +80,6 @@ def add_noise(path_to_images, path_to_noised_images):
         destination = path_to_noised_images + image_name + "_" + str(mean) + "_" + str(std) + ".jpg"
         cv2.imwrite(destination, cv2.cvtColor(noisy_image, cv2.COLOR_RGB2BGR))
 
-"""
 if __name__ == "__main__":
     args = sys.argv
     globals()[args[1]](*args[2:])
-"""
-
-username = "twiggly"
-path_to_labels = "./anime-info/top-tv/anime_scores.txt"
-path_to_folder = "/mnt/b/YouTubeDL/anime-segmentation/test_img/"
-path_to_noise_folder = "/mnt/b/YouTubeDL/anime-segmentation/test_noised_img/"
-path_to_images = "/mnt/b/YouTubeDL/anime-segmentation/test_img/"
-path_to_noised_images = "/mnt/b/YouTubeDL/anime-segmentation/test_noised_img/"
-path_to_make = "/mnt/b/YouTubeDL/anime-segmentation/output/data_rgb_noRound/"
-path_to_make_backup = "/mnt/b/YouTubeDL/anime-segmentation/output/data_rgb_noRound_test/"
-path_to_make_user = f"/mnt/b/YouTubeDL/anime-segmentation/output/data_{username}/"
-path_to_data = "/mnt/b/YouTubeDL/anime-segmentation/output/data_round/"
-path_to_user_labels = f"./anime-info/{username}_anime_scores.txt"
-path_to_user_animes = f"./anime-info/{username}_anime_ids.txt"
-
-user_move_to_classes(path_to_user_labels, path_to_user_animes, path_to_make_user, path_to_folder)
-user_move_to_classes(path_to_user_labels, path_to_user_animes, path_to_make_user, path_to_noise_folder)
-
-# move_to_classes(path_to_make, path_to_folder)
-# move_to_classes(path_to_make_backup, path_to_folder)
-# move_to_classes(path_to_make, path_to_noise_folder)
