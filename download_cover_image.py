@@ -6,7 +6,7 @@ if not os.path.exists("images"):
     os.makedirs("images")
 
 # path to picture urls
-path_picture_urls = "./anime-info/top-tv/anime_picture_urls.txt"
+path_picture_urls = ""
 
 with open(path_picture_urls, "r") as file:
     image_urls = file.read().splitlines()
